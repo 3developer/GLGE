@@ -714,6 +714,7 @@ function getChildElementById( dNode, id ) {
 }
 
 var MaterialCache={};
+GLGE.Collada.prototype.useCache = true;
 
 /**
 * Gets the sampler for a texture
@@ -723,17 +724,21 @@ var MaterialCache={};
 GLGE.Collada.prototype.getMaterial=function(id,bvi){	
 
 	// JHD: Added "else" and enclosing brackets
-	if (!MaterialCache[this.url]) {
-		MaterialCache[this.url] = {};
-	} else if (MaterialCache[this.url][id]) {
-		return MaterialCache[this.url][id];
+  if(this.useCache) {
+    if (!MaterialCache[this.url]) {
+      MaterialCache[this.url] = {};
+    } else if (MaterialCache[this.url][id]) {
+      return MaterialCache[this.url][id];
+    }
 	}
-	
-    	var materialLib=this.xml.getElementsByTagName("library_materials")[0];
+
+  var materialLib=this.xml.getElementsByTagName("library_materials")[0];
 	var materialNode=getChildElementById(materialLib, id); //this.xml.getElementById(id);
     if (!materialNode) {
         var returnMaterial=new GLGE.Material();
-	    MaterialCache[this.url][id]=returnMaterial;        
+        if(this.useCache) {
+	        MaterialCache[this.url][id]=returnMaterial;
+        }
         return returnMaterial;
     }
 	var effectid=materialNode.getElementsByTagName("instance_effect")[0].getAttribute("url").substr(1);
@@ -744,7 +749,9 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 	var returnMaterial=new GLGE.Material();
 	returnMaterial.setSpecular(0);
 	
-	MaterialCache[this.url][id]=returnMaterial;
+  if(this.useCache) {
+	  MaterialCache[this.url][id]=returnMaterial;
+  }
 	
 	var child;
 	var color;
@@ -1870,14 +1877,17 @@ GLGE.Collada.prototype.initVisualScene=function(){
     if (up_axis[0]!="Y"&&up_axis[0]!="y") {
         transformRoot = new GLGE.Group();
         this.addChild(transformRoot);
+// Antony Chorba -- changed to git revision 9ca8c0c66568fa016e72769f6bcfe32ea6e14021
         if (up_axis[0]!="Z"&&up_axis[0]!="z") {
-            transformRoot.setRotMatrix(GLGE.Mat4([0, -1 , 0,  0,
+            this.setRotMatrix(GLGE.Mat4([0, -1 , 0,  0,
+//            transformRoot.setRotMatrix(GLGE.Mat4([0, -1 , 0,  0,
 					                     1, 0, 0, 0,
 					                     0, 0, 1, 0,
 					                     0, 0, 0, 1]));
           
-        }else {
-            transformRoot.setRotMatrix(GLGE.Mat4([1, 0 , 0,  0,
+        } else {
+            this.setRotMatrix(GLGE.Mat4([1, 0 , 0,  0,
+//            transformRoot.setRotMatrix(GLGE.Mat4([1, 0 , 0,  0,
 					                     0, 0, 1, 0,
 					                     0, -1, 0, 0,
 					                     0, 0, 0, 1]));
